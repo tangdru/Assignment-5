@@ -45,3 +45,10 @@ h2{ font-size:1.1em;}
 p{ font-size: .9em;}
 
 /*------------svg--------------*/
+
+.text1{
+	fill: red;
+	font-size:12px;
+	text-anchor:middle;
+
+}
