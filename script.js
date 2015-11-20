@@ -65,7 +65,7 @@ function parseData(d){
     </g>*/
 
 function draw(blocks, neighborhoods) {
-    plot.selectAll('.block-group')
+    plot.selectAll('.block-groups')
         .data(blocks.features)
         .enter()
         .append('g')
@@ -81,6 +81,7 @@ function draw(blocks, neighborhoods) {
         .call(attachTooltip)
 
     var plot2 = plot.append('g')
+        .attr('class','hood')
         .selectAll('.label')
         .data(neighborhoods.features)
         .enter()
@@ -97,14 +98,14 @@ function draw(blocks, neighborhoods) {
 
     plot2.append('text')
         .text(function(d){
-            var neighName = (d.properties.Name);
-            return neighName
+            var hoodName = (d.properties.Name);
+            return hoodName
         })
         .attr('x', function(d){
-            return pathGenerator.centroid([0]);
+            return pathGenerator.centroid(d)[0];
         })
         .attr('y', function(d){
-            return pathGenerator.centroid([1]);
+            return pathGenerator.centroid(d)[1];
         })
 
 }
