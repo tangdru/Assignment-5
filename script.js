@@ -5,7 +5,7 @@ var width = document.getElementById('map').clientWidth - margin.r - margin.l,
     height = document.getElementById('map').clientHeight - margin.t - margin.b;
 
 var canvas = d3.select('.canvas');
-var map = canvas
+var plot = canvas
     .append('svg')
     .attr('width',width+margin.r+margin.l)
     .attr('height',height + margin.t + margin.b)
@@ -22,7 +22,8 @@ var projection = d3.geo.mercator()
     .center(bostonLngLat)
     .scale(150000);
 
-var path = d3.geo.path().projection(projection);
+
+var pathGenerator = d3.geo.path().projection(projection);
 
 //TODO: create a color scale
 var colorScale = d3.scale.linear().domain([0,150000]).range(['#1F1C2C','#928DAB']);
@@ -47,9 +48,9 @@ queue()
 
 function parseData(d){
     rateOfIncome.set(d.geoid, {
-        'nameBlock': d.name,
+        'name': d.name,
         'income': +d.B19013001
-    });;
+    });
     console.log(d);
 
 }
@@ -64,12 +65,13 @@ function parseData(d){
     </g>*/
 
 function draw(blocks, neighborhoods) {
-    map.selectAll('.block-group')
+    plot.selectAll('.block-group')
         .data(blocks.features)
         .enter()
+        .append('g')
         .append('path')
         .attr('class', 'block-group')
-        .attr('d', path)
+        .attr('d', pathGenerator)
         .style('fill', function (d) {
 
             var income = rateOfIncome.get(d.properties.geoid).income;
@@ -78,27 +80,31 @@ function draw(blocks, neighborhoods) {
 
         .call(attachTooltip)
 
-    map.append('path')
-        .datum(neighborhoods)
-        .attr('class','boundaries')
-        .attr('d', path)
-        .attr('fill', 'none')
-        .style('stroke-width', '.5px')
-        .style('stroke', 'white')
-
-    map.selectAll('.label')
+    var plot2 = plot.append('g')
+        .selectAll('.label')
         .data(neighborhoods.features)
         .enter()
-        .append('text')
+        .append('g')
         .attr('class','label')
+
+    plot2.append('path')
+        .attr('class','boundries')
+        .attr('d',pathGenerator)
+        .attr('fill','none')
+        .style('stroke-width','.5px')
+        .style('stroke','white')
+
+
+    plot2.append('text')
         .text(function(d){
-            return (d.properties.Name);
+            var neighName = (d.properties.Name);
+            return neighName
         })
         .attr('x', function(d){
-            return path.centroid([0]);
+            return pathGenerator.centroid([0]);
         })
         .attr('y', function(d){
-            return path.centroid([1]);
+            return pathGenerator.centroid([1]);
         })
 
 }
@@ -112,8 +118,11 @@ function attachTooltip(selection){
                 .style('opacity',1);
 
             var income = rateOfIncome.get(d.properties.geoid).income;
+            var name = rateOfIncome.get(d.properties.geoid).name;
+
 
             tooltip.select('#HHincome').html(income);
+            tooltip.select('#Name').html(name);
         })
 
         .on('mousemove',function(){
