@@ -25,7 +25,7 @@ var projection = d3.geo.mercator()
 var path = d3.geo.path().projection(projection);
 
 //TODO: create a color scale
-var colorScale = d3.scale.linear().domain([0,150000]).range(['white','black']);
+var colorScale = d3.scale.linear().domain([0,150000]).range(['#1F1C2C','#928DAB']);
 
 
 //TODO: create a d3.map() to store the value of median HH income per block group
@@ -40,8 +40,6 @@ queue()
     .defer(d3.json, "data/bos_neighborhoods.geojson")
     .defer(d3.csv, "data/acs2013_median_hh_income.csv", parseData)
     .await(function(err, blocks, neighborhoods){
-        console.log(blocks);
-        console.log(neighborhoods);
 
 
         draw(blocks, neighborhoods);
@@ -49,9 +47,9 @@ queue()
 
 function parseData(d){
     rateOfIncome.set(d.geoid, {
-        neighborhoodName: d.name,
-        income: +d.B19013001
-    });
+        'nameBlock': d.name,
+        'income': +d.B19013001
+    });;
     console.log(d);
 
 }
@@ -65,41 +63,72 @@ function parseData(d){
     </g>
     </g>*/
 
-function draw(blocks, neighborhoods){
-    map.append('g')
-        .attr('class','block-groups')
-        .selectAll('.block-group')
+function draw(blocks, neighborhoods) {
+    map.selectAll('.block-group')
         .data(blocks.features)
         .enter()
         .append('path')
-        .attr('class','block-group')
-        .attr('d',path)
-        .style('fill', function(d){
+        .attr('class', 'block-group')
+        .attr('d', path)
+        .style('fill', function (d) {
 
             var income = rateOfIncome.get(d.properties.geoid).income;
             return colorScale(income);
         })
 
-    map2 = map.append('g')
-        .attr('class','neighborhoods')
-        .selectAll('neighborhood')
+        .call(attachTooltip)
+
+    map.append('path')
+        .datum(neighborhoods)
+        .attr('class','boundaries')
+        .attr('d', path)
+        .attr('fill', 'none')
+        .style('stroke-width', '.5px')
+        .style('stroke', 'white')
+
+    map.selectAll('.label')
         .data(neighborhoods.features)
         .enter()
-        .append('path')
-        .attr('class','neighborhood');
-
-    map2.append('path')
-        .attr('class','boundry')
-        .attr('d', path)
-        .style('stroke','white')
-        .style('stroke-width','2px')
-        .style('fill','none');
-
-
-
-
-
-
-
+        .append('text')
+        .attr('class','label')
+        .text(function(d){
+            return (d.properties.Name);
+        })
+        .attr('x', function(d){
+            return path.centroid([0]);
+        })
+        .attr('y', function(d){
+            return path.centroid([1]);
+        })
 
 }
+function attachTooltip(selection){
+    selection
+        .on('mouseenter',function(d){
+            var tooltip = d3.select('.custom-tooltip');
+
+            tooltip
+                .transition()
+                .style('opacity',1);
+
+            var income = rateOfIncome.get(d.properties.geoid).income;
+
+            tooltip.select('#HHincome').html(income);
+        })
+
+        .on('mousemove',function(){
+            var xy = d3.mouse(canvas.node());
+
+            var tooltip = d3.select('.custom-tooltip');
+
+            tooltip
+                .style('left',xy[0]+10+'px')
+                .style('top',(xy[1]+10)+'px');
+        })
+        .on('mouseleave',function(){
+            d3.select('.custom-tooltip')
+                .transition()
+                .style('opacity',0);
+        })
+}
+

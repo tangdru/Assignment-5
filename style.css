@@ -19,7 +19,7 @@ html,body{
 }
 .container .canvas{
 	width:100%;
-	background:white;
+	background: black;
 	height:900px;
     position:relative;
 }
@@ -30,10 +30,13 @@ html,body{
 /*-----------tooltip-----------*/
 .canvas .custom-tooltip{
     position:absolute;
-    border:1px solid red;
-    width:150px;
-    min-height:10px;
-    padding:0px 10px;
+	background-color: rgb(250,250,250);
+    width:60px;
+	height:50px;
+    min-height:4px;
+    padding:0px 0px px 0px;
+	text-align: center;
+	border-radius: 10px;
 }
 
 /*------------font-------------*/
@@ -44,11 +47,13 @@ h1{ font-size:2em;}
 h2{ font-size:1.1em;}
 p{ font-size: .9em;}
 
+.label{font-size: 10px;}
+
+#HHincome{font-size:12px;}
+
+.tooltipText{font-size:10px;}
+
+
+
 /*------------svg--------------*/
 
-.text1{
-	fill: red;
-	font-size:12px;
-	text-anchor:middle;
-
-}
